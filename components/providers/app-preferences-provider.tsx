@@ -56,7 +56,7 @@ export function AppPreferencesProvider({ children }: { children: React.ReactNode
 
     if (savedPreferences) {
       try {
-        const parsed = JSON.parse(savedPreferences) as StoredPreferences
+        const parsed = JSON.parse(savedPreferences) as Preferences
         const parsedCurrency = validCurrencies.includes(parsed.selectedCurrency as SupportedCurrency)
           ? (parsed.selectedCurrency as SupportedCurrency)
           : undefined
