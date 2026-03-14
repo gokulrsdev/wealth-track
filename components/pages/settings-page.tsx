@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import { signOut } from "next-auth/react"
-import { Bell, Check, Globe, Loader2, LogOut, Moon, Save, Sun, Trash2, User } from "lucide-react"
+import { Check, Globe, Loader2, LogOut, Moon, Save, Sun, Trash2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { getInitials, type UserProfile } from "@/lib/finance"
 import { useAppPreferences } from "@/components/providers/app-preferences-provider"
@@ -28,19 +27,13 @@ export function SettingsPage() {
   const [resetConfirmText, setResetConfirmText] = useState("")
   const [loading, setLoading] = useState(true)
   const [savingProfile, setSavingProfile] = useState(false)
-  const [savingPreferences, setSavingPreferences] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [statusMessage, setStatusMessage] = useState("")
   const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
   const {
     selectedCurrency,
-    notificationsEnabled,
-    emailAlertsEnabled,
     setSelectedCurrency,
-    setNotificationsEnabled,
-    setEmailAlertsEnabled,
-    clearNotifications,
     formatCurrency,
   } = useAppPreferences()
 
@@ -107,48 +100,6 @@ export function SettingsPage() {
     }
   }
 
-  async function handleSavePreferences() {
-    setSavingPreferences(true)
-    setStatusMessage("")
-
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(
-          "wealth-track-preferences",
-          JSON.stringify({
-            selectedCurrency,
-            notificationsEnabled,
-            emailAlertsEnabled,
-          })
-        )
-
-        if (theme) {
-          window.localStorage.setItem("theme", theme)
-        }
-      }
-
-      setStatusMessage("Preferences saved. Currency and notification settings are now active.")
-    } catch (error) {
-      console.error(error)
-      setStatusMessage("Preferences could not be saved.")
-    } finally {
-      setSavingPreferences(false)
-    }
-  }
-
-  function handleNotificationsPreferenceChange(enabled: boolean) {
-    setNotificationsEnabled(enabled)
-
-    if (
-      enabled &&
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "default"
-    ) {
-      Notification.requestPermission().catch(() => undefined)
-    }
-  }
-
   async function handleResetData() {
     setResetting(true)
     setStatusMessage("")
@@ -163,7 +114,6 @@ export function SettingsPage() {
       setStatusMessage("All finance data has been removed from this account.")
       setResetConfirmText("")
       setShowResetDialog(false)
-      clearNotifications()
     } catch (error) {
       console.error(error)
       setStatusMessage("Reset failed.")
@@ -278,33 +228,6 @@ export function SettingsPage() {
               {selectedCurrency === currency.code ? <Check className="h-4 w-4 text-primary" /> : null}
             </button>
           ))}
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border/50 bg-card p-6">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
-          <Bell className="h-5 w-5 text-primary" />
-          Notifications
-        </h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-foreground">Push Notifications</p>
-              <p className="text-sm text-muted-foreground">Show transaction updates and budget alerts inside the app.</p>
-            </div>
-            <Switch checked={notificationsEnabled} onCheckedChange={handleNotificationsPreferenceChange} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-foreground">Email Alerts</p>
-              <p className="text-sm text-muted-foreground">Reserved for future email summaries. The preference is stored now.</p>
-            </div>
-            <Switch checked={emailAlertsEnabled} onCheckedChange={setEmailAlertsEnabled} />
-          </div>
-          <Button onClick={handleSavePreferences} disabled={savingPreferences} className="gap-2">
-            {savingPreferences ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save Preferences
-          </Button>
         </div>
       </div>
 
